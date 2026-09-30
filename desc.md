@@ -1,0 +1,1 @@
+Resolves issue #6 by correcting grammar in user-facing output messages.
