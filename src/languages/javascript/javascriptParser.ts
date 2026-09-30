@@ -8,7 +8,7 @@ export class JavaScriptParser implements LanguageParser {
     supports(filePath: string): boolean {
 
         return (
-            filePath.endsWith(".js") ||
+            filePath.toLowerCase().endsWith(".js") ||
             filePath.endsWith(".jsx") ||
             filePath.endsWith(".ts") ||
             filePath.endsWith(".tsx")
