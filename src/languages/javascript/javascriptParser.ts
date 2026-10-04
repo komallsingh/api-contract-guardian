@@ -2,6 +2,10 @@ import { ApiContract } from "../../core/apiContract";
 import { LanguageParser } from "../../core/parser";
 import { detectRoutes } from "./routeDetector";
 import { extractResponseContract } from "./responseExtractor";
+import { SourceFileContent } from "../../core/sourceFileLoader";
+import {
+    discoverJavaScriptContracts
+} from "./routeComposer";
 
 export class JavaScriptParser implements LanguageParser {
 
@@ -35,4 +39,12 @@ export class JavaScriptParser implements LanguageParser {
             };
         });
     }
+    discoverRepository(
+    sourceFiles: SourceFileContent[]
+): ApiContract[] {
+
+    return discoverJavaScriptContracts(
+        sourceFiles
+    );
+}
 }
