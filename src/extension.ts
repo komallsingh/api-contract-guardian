@@ -78,6 +78,7 @@ if (!baseRevision) {
 
 const result = service.compare(
     baseRevision,
+    // HEAD represents the current Git revision being compared against.
     "HEAD"
 );
                 const consumers =
