@@ -6,6 +6,9 @@ import { logger } from "./logger";
 import { createDiagnostics } from "./vscode/diagnostics";
 import { ConsumerAnalysisService } from "./core/consumerAnalysisService";
 import { JavaScriptConsumerParser } from "./languages/javascript/consumerParser";
+import { ApiDiscoveryService } from "./core/apiDiscoveryService";
+import { GitSourceRepository } from "./core/git/gitSourceRepository";
+import { ApiRevisionDiscovery } from "./core/git/apiRevisionDiscovery";
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -39,13 +42,21 @@ export function activate(context: vscode.ExtensionContext) {
 
             try {
 
-                const service =
-                    new ContractComparisonService(
-                        repositoryPath,
-                        [
-                            new JavaScriptParser()
-                        ]
-                    );
+                const apiRevisionDiscovery =
+                    new ApiRevisionDiscovery(
+                        new GitSourceRepository(
+                             repositoryPath
+                        ),
+                        new ApiDiscoveryService([
+                              new JavaScriptParser()
+                            ])
+                     );
+
+            const service =
+                         new ContractComparisonService(
+                              repositoryPath,
+                              apiRevisionDiscovery
+                        );
                 const consumerAnalysisService =
                     new ConsumerAnalysisService(
                          repositoryPath,

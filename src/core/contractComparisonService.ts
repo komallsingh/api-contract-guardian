@@ -1,14 +1,14 @@
 import { compareApiContracts } from "./apiComparator";
-import { ContractLoader } from "./contract/contractLoader";
-import { GitService } from "./git/gitService";
+import { ApiContract } from "./apiContract";
 import { getChangedFiles } from "./git/changedFiles";
-import { LanguageParser } from "./parser";
+import { ApiRevisionDiscovery } from "./git/apiRevisionDiscovery";
 
 export class ContractComparisonService {
 
     constructor(
         private readonly repositoryPath: string,
-        private readonly parsers: LanguageParser[]
+        private readonly apiRevisionDiscovery:
+            ApiRevisionDiscovery
     ) {}
 
     compare(
@@ -22,39 +22,27 @@ export class ContractComparisonService {
             this.repositoryPath
         );
 
-        const loader = new ContractLoader(
-            new GitService(this.repositoryPath),
-            this.parsers
-        );
-
         const oldContracts =
-            loader.loadFromRevision(
-                changes
-                    .filter(change =>
-                        change.type !== "ADDED"
-                    )
-                    .map(change => change.path),
+            this.apiRevisionDiscovery.discover(
                 oldRevision
             );
 
         const newContracts =
-            loader.loadFromFiles(
-                changes
-                    .filter(change =>
-                        change.type !== "DELETED"
-                    )
-                    .map(change => change.path),
-                this.repositoryPath
+            this.apiRevisionDiscovery.discover(
+                newRevision
+            );
+
+        const breakingChanges =
+            compareApiContracts(
+                oldContracts,
+                newContracts
             );
 
         return {
             changes,
             oldContracts,
             newContracts,
-            breakingChanges: compareApiContracts(
-                oldContracts,
-                newContracts
-            )
+            breakingChanges
         };
     }
 }

@@ -13,6 +13,9 @@ import { GitService } from "../core/git/gitService";
 import { getChangedFiles } from "../core/git/changedFiles";
 import { JavaScriptParser } from "../languages/javascript/javascriptParser";
 import { ContractComparisonService } from "../core/contractComparisonService";
+import { ApiDiscoveryService } from "../core/apiDiscoveryService";
+import { ApiRevisionDiscovery } from "../core/git/apiRevisionDiscovery";
+import { GitSourceRepository } from "../core/git/gitSourceRepository";
 
 suite("Git Comparison E2E",() => {
 
@@ -263,13 +266,21 @@ const newContracts =
                 "HEAD"
             ]);
 
-            const service =
-                new ContractComparisonService(
-                    repositoryPath,
-                    [
-                        new JavaScriptParser()
-                    ]
-                );
+            const apiRevisionDiscovery =
+    new ApiRevisionDiscovery(
+        new GitSourceRepository(
+            repositoryPath
+        ),
+        new ApiDiscoveryService([
+            new JavaScriptParser()
+        ])
+    );
+
+const service =
+    new ContractComparisonService(
+        repositoryPath,
+        apiRevisionDiscovery
+    );
 
             const result = service.compare(
                 oldRevision,
@@ -399,13 +410,21 @@ test(
                 "HEAD"
             ]);
 
-            const service =
-                new ContractComparisonService(
-                    repositoryPath,
-                    [
-                        new JavaScriptParser()
-                    ]
-                );
+            const apiRevisionDiscovery =
+    new ApiRevisionDiscovery(
+        new GitSourceRepository(
+            repositoryPath
+        ),
+        new ApiDiscoveryService([
+            new JavaScriptParser()
+        ])
+    );
+
+const service =
+    new ContractComparisonService(
+        repositoryPath,
+        apiRevisionDiscovery
+    );
 
             const result = service.compare(
                 oldRevision,
