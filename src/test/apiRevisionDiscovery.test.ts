@@ -91,6 +91,7 @@ suite(
                             "server.ts"
                         ),
                         `
+                         const app = express();
                         app.get(
                             "/customers",
                             (req, res) => {

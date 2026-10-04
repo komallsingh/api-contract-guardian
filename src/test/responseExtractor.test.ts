@@ -7,7 +7,7 @@ suite("Response Extractor", () => {
     test("extracts response fields from res.json()", () => {
 
         const sourceCode = `
-            app.get("/users/:id", (req, res) => {
+            const app = express(); app.get("/users/:id", (req, res) => {
                 res.json({
                     id: 1,
                     name: "Komal",
@@ -35,7 +35,7 @@ suite("Response Extractor", () => {
     test("ignores dynamic response values", () => {
 
         const sourceCode = `
-            app.get("/users", (req, res) => {
+            const app = express(); app.get("/users", (req, res) => {
                 res.json(user);
             });
         `;
@@ -51,7 +51,7 @@ suite("Response Extractor", () => {
     test("ignores non response json calls", () => {
 
         const sourceCode = `
-            app.get("/users", (req, res) => {
+            const app = express(); app.get("/users", (req, res) => {
                 foo.json({
                     id: 1
                 });
@@ -69,7 +69,7 @@ suite("Response Extractor", () => {
     test("extracts string property names", () => {
 
         const sourceCode = `
-            app.get("/users", (req, res) => {
+            const app = express(); app.get("/users", (req, res) => {
                 res.json({
                     "user-name": "Komal"
                 });

@@ -1,17 +1,26 @@
 import * as assert from "assert";
+
 import { execFileSync } from "child_process";
+
 import {
     mkdtempSync,
     writeFileSync
 } from "fs";
+
 import { rm } from "fs/promises";
+
 import { tmpdir } from "os";
+
 import { join } from "path";
 
 import { ContractComparisonService } from "../core/contractComparisonService";
+
 import { JavaScriptParser } from "../languages/javascript/javascriptParser";
+
 import { ApiDiscoveryService } from "../core/apiDiscoveryService";
+
 import { GitSourceRepository } from "../core/git/gitSourceRepository";
+
 import { ApiRevisionDiscovery } from "../core/git/apiRevisionDiscovery";
 
 suite("Contract Comparison Service", () => {
@@ -55,7 +64,7 @@ suite("Contract Comparison Service", () => {
             writeFileSync(
                 join(repositoryPath, "server.ts"),
                 `
-                    app.get("/users/:id", (req, res) => {
+                    const app = express(); app.get("/users/:id", (req, res) => {
                         res.json({
                             id: 1
                         });
@@ -70,7 +79,12 @@ suite("Contract Comparison Service", () => {
             );
 
             runGit(["add", "server.ts"]);
-            runGit(["commit", "-m", "initial API"]);
+
+            runGit([
+                "commit",
+                "-m",
+                "initial API"
+            ]);
 
             const oldRevision = runGit([
                 "rev-parse",
@@ -80,7 +94,7 @@ suite("Contract Comparison Service", () => {
             writeFileSync(
                 join(repositoryPath, "server.ts"),
                 `
-                    app.get("/users", (req, res) => {
+                    const app = express(); app.get("/users", (req, res) => {
                         res.json({
                             users: []
                         });
@@ -89,6 +103,7 @@ suite("Contract Comparison Service", () => {
             );
 
             runGit(["add", "server.ts"]);
+
             runGit([
                 "commit",
                 "-m",
@@ -101,20 +116,20 @@ suite("Contract Comparison Service", () => {
             ]);
 
             const apiRevisionDiscovery =
-    new ApiRevisionDiscovery(
-        new GitSourceRepository(
-            repositoryPath
-        ),
-        new ApiDiscoveryService([
-            new JavaScriptParser()
-        ])
-    );
+                new ApiRevisionDiscovery(
+                    new GitSourceRepository(
+                        repositoryPath
+                    ),
+                    new ApiDiscoveryService([
+                        new JavaScriptParser()
+                    ])
+                );
 
-const service =
-    new ContractComparisonService(
-        repositoryPath,
-        apiRevisionDiscovery
-    );
+            const service =
+                new ContractComparisonService(
+                    repositoryPath,
+                    apiRevisionDiscovery
+                );
 
             const result = service.compare(
                 oldRevision,
@@ -143,180 +158,187 @@ const service =
                     retryDelay: 200
                 }
             );
+
         }
+
     });
+
     test(
-    "discovers APIs from unchanged source files",
-    async function () {
+        "discovers APIs from unchanged source files",
+        async function () {
 
-        this.timeout(10000);
+            this.timeout(10000);
 
-        const repositoryPath =
-            mkdtempSync(
-                join(
-                    tmpdir(),
-                    "guardian-comparison-"
-                )
-            );
+            const repositoryPath =
+                mkdtempSync(
+                    join(
+                        tmpdir(),
+                        "guardian-comparison-"
+                    )
+                );
 
-        const runGit = (
-            args: string[]
-        ): string =>
-            execFileSync(
-                "git",
-                args,
-                {
-                    cwd: repositoryPath,
-                    encoding: "utf-8"
-                }
-            ).trim();
+            const runGit = (
+                args: string[]
+            ): string =>
+                execFileSync(
+                    "git",
+                    args,
+                    {
+                        cwd: repositoryPath,
+                        encoding: "utf-8"
+                    }
+                ).trim();
 
-        try {
+            try {
 
-            runGit(["init"]);
+                runGit(["init"]);
 
-            runGit([
-                "config",
-                "user.email",
-                "test@example.com"
-            ]);
-
-            runGit([
-                "config",
-                "user.name",
-                "Guardian Test"
-            ]);
-
-            /*
-             * routes.ts contains the API.
-             * server.ts does not contain the route.
-             */
-            writeFileSync(
-                join(
-                    repositoryPath,
-                    "routes.ts"
-                ),
-                `
-                    router.get(
-                        "/customers",
-                        (req, res) => {
-                            res.json({
-                                id: 1
-                            });
-                        }
-                    );
-                `
-            );
-
-            writeFileSync(
-                join(
-                    repositoryPath,
-                    "server.ts"
-                ),
-                `
-                    const app = express();
-                `
-            );
-
-            runGit(["add", "."]);
-
-            runGit([
-                "commit",
-                "-m",
-                "add API"
-            ]);
-
-            const oldRevision =
                 runGit([
-                    "rev-parse",
-                    "HEAD"
+                    "config",
+                    "user.email",
+                    "test@example.com"
                 ]);
 
-            /*
-             * Only server.ts changes.
-             * routes.ts remains untouched.
-             */
-            writeFileSync(
-                join(
-                    repositoryPath,
-                    "server.ts"
-                ),
-                `
-                    const app = express();
-
-                    console.log("server started");
-                `
-            );
-
-            runGit(["add", "."]);
-
-            runGit([
-                "commit",
-                "-m",
-                "modify server"
-            ]);
-
-            const newRevision =
                 runGit([
-                    "rev-parse",
-                    "HEAD"
+                    "config",
+                    "user.name",
+                    "Guardian Test"
                 ]);
 
-            const apiRevisionDiscovery =
-                new ApiRevisionDiscovery(
-                    new GitSourceRepository(
-                        repositoryPath
+                /*
+                 * routes.ts contains the API.
+                 * server.ts does not contain the route.
+                 */
+
+                writeFileSync(
+                    join(
+                        repositoryPath,
+                        "routes.ts"
                     ),
-                    new ApiDiscoveryService([
-                        new JavaScriptParser()
-                    ])
+                    `
+                        const router = express.Router(); router.get(
+                            "/customers",
+                            (req, res) => {
+                                res.json({
+                                    id: 1
+                                });
+                            }
+                        );
+                    `
                 );
 
-            const service =
-                new ContractComparisonService(
+                writeFileSync(
+                    join(
+                        repositoryPath,
+                        "server.ts"
+                    ),
+                    `
+                        const app = express();
+                    `
+                );
+
+                runGit(["add", "."]);
+
+                runGit([
+                    "commit",
+                    "-m",
+                    "add API"
+                ]);
+
+                const oldRevision =
+                    runGit([
+                        "rev-parse",
+                        "HEAD"
+                    ]);
+
+                /*
+                 * Only server.ts changes.
+                 * routes.ts remains untouched.
+                 */
+
+                writeFileSync(
+                    join(
+                        repositoryPath,
+                        "server.ts"
+                    ),
+                    `
+                        const app = express();
+                        console.log("server started");
+                    `
+                );
+
+                runGit(["add", "."]);
+
+                runGit([
+                    "commit",
+                    "-m",
+                    "modify server"
+                ]);
+
+                const newRevision =
+                    runGit([
+                        "rev-parse",
+                        "HEAD"
+                    ]);
+
+                const apiRevisionDiscovery =
+                    new ApiRevisionDiscovery(
+                        new GitSourceRepository(
+                            repositoryPath
+                        ),
+                        new ApiDiscoveryService([
+                            new JavaScriptParser()
+                        ])
+                    );
+
+                const service =
+                    new ContractComparisonService(
+                        repositoryPath,
+                        apiRevisionDiscovery
+                    );
+
+                const result =
+                    service.compare(
+                        oldRevision,
+                        newRevision
+                    );
+
+                assert.ok(
+                    result.oldContracts.some(
+                        contract =>
+                            contract.method === "GET" &&
+                            contract.path === "/customers"
+                    )
+                );
+
+                assert.ok(
+                    result.newContracts.some(
+                        contract =>
+                            contract.method === "GET" &&
+                            contract.path === "/customers"
+                    )
+                );
+
+                assert.deepStrictEqual(
+                    result.breakingChanges,
+                    []
+                );
+
+            } finally {
+
+                await rm(
                     repositoryPath,
-                    apiRevisionDiscovery
+                    {
+                        recursive: true,
+                        force: true,
+                        maxRetries: 10,
+                        retryDelay: 200
+                    }
                 );
 
-            const result =
-                service.compare(
-                    oldRevision,
-                    newRevision
-                );
+            }
 
-            assert.ok(
-                result.oldContracts.some(
-                    contract =>
-                        contract.method === "GET" &&
-                        contract.path === "/customers"
-                )
-            );
-
-            assert.ok(
-                result.newContracts.some(
-                    contract =>
-                        contract.method === "GET" &&
-                        contract.path === "/customers"
-                )
-            );
-
-            assert.deepStrictEqual(
-                result.breakingChanges,
-                []
-            );
-
-        } finally {
-
-            await rm(
-                repositoryPath,
-                {
-                    recursive: true,
-                    force: true,
-                    maxRetries: 10,
-                    retryDelay: 200
-                }
-            );
         }
-    }
-);
+    );
+
 });

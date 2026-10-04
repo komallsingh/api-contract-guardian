@@ -33,7 +33,7 @@ suite("JavaScript Parser", () => {
         const parser = new JavaScriptParser();
 
         const sourceCode = `
-            app.get("/users/:id", (req, res) => {
+            const app = express(); app.get("/users/:id", (req, res) => {
                 res.json({
                     id: 1,
                     name: "Komal",

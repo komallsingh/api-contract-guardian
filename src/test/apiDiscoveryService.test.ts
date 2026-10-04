@@ -29,6 +29,7 @@ suite(
                             language:
                                 "typescript",
                             content: `
+                             const app = express();
                                 app.get(
                                     "/customers/:id",
                                     (req, res) => {
