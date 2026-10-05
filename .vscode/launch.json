@@ -6,7 +6,8 @@
             "type": "extensionHost",
             "request": "launch",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
+                "--extensionDevelopmentPath=${workspaceFolder}/api-contract-guardian",
+                "--folder-uri=${workspaceFolder}/../guardian-v2-demo-api"
             ],
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"

@@ -1,6 +1,26 @@
 # Changelog
 
 All notable changes to API Contract Guardian are documented here.
+## [2.0.0]
+
+### Added
+
+- Repository-wide JavaScript and TypeScript API discovery
+- Cross-file module indexing
+- Relative import resolution
+- Express application and router detection without hardcoded variable names
+- Default and named router export/import resolution
+- Express `use()` mount detection
+- Cross-file route path composition
+- Nested router mount support
+- Multiple router mount support
+
+### Improved
+
+- API discovery now analyzes the repository rather than only changed files
+- Git revision comparisons now work with APIs located across source files
+- Expanded automated test coverage
+
 
 ## [1.0.0] - 2026-09-26
 
