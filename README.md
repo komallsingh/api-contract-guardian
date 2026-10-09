@@ -15,6 +15,32 @@ A VS Code extension that compares API contracts across Git revisions, detects po
 </div>
 
 ---
+## 📦 Installation
+
+API Contract Guardian is available on the Visual Studio Marketplace.
+
+### Install from VS Code
+
+1. Open Visual Studio Code.
+2. Open the Extensions panel using `Ctrl + Shift + X`.
+3. Search for **API Contract Guardian**.
+4. Select API Contract Guardian by **komallsingh**.
+5. Click **Install**.
+
+![Install API Contract Guardian from the VS Code Marketplace](images/marketplace-install.png)
+
+You can also visit the [API Contract Guardian Marketplace page](https://marketplace.visualstudio.com/items?itemName=komallsingh.api-contract-guardian) to view the extension and install it.
+
+### Install from VSIX
+
+You can also download the `.vsix` file from the project's [GitHub Releases](https://github.com/komallsingh/api-contract-guardian/releases) and install it manually:
+
+1. Open the Extensions panel in VS Code.
+2. Click the **...** menu.
+3. Select **Install from VSIX...**.
+4. Choose the downloaded `.vsix` file.
+
+---
 
 ## 📖 Overview
 

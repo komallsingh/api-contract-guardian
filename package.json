@@ -2,7 +2,8 @@
   "name": "api-contract-guardian",
   "displayName": "API Contract Guardian",
   "description": "Detect potentially breaking API contract changes in projects.",
-  "version": "2.0.0",
+  "version": "2.0.1",
+  "icon": "images/icon.png",
   "license": "MIT",
   "engines": {
     "vscode": "^1.136.0"
@@ -20,6 +21,11 @@
       }
     ]
   },
+  "publisher": "komallsingh",
+"repository": {
+  "type": "git",
+  "url": "https://github.com/komallsingh/api-contract-guardian.git"
+},
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "npm run check-types && npm run lint && node esbuild.js",
