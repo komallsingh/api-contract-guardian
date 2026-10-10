@@ -16,7 +16,6 @@ A VS Code extension that detects breaking API contract changes across Git revisi
 
 **Git-aware API analysis · Repository-wide discovery · Cross-file routing · VS Code diagnostics**
 
-[GitHub Repository](YOUR_GITHUB_REPOSITORY_URL)
 
 </div>
 
@@ -869,6 +868,5 @@ Software Developer · Backend Developer · Open Source Contributor
 
 ⭐ If you find the project useful, consider starring the repository.
 
-[GitHub Repository](YOUR_GITHUB_REPOSITORY_URL)
 
 </div>

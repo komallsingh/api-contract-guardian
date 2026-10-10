@@ -9,6 +9,7 @@ import { JavaScriptConsumerParser } from "./languages/javascript/consumerParser"
 import { ApiDiscoveryService } from "./core/apiDiscoveryService";
 import { GitSourceRepository } from "./core/git/gitSourceRepository";
 import { ApiRevisionDiscovery } from "./core/git/apiRevisionDiscovery";
+import { PythonParser } from "./languages/python/pythonParser";
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -48,7 +49,8 @@ export function activate(context: vscode.ExtensionContext) {
                              repositoryPath
                         ),
                         new ApiDiscoveryService([
-                              new JavaScriptParser()
+                              new JavaScriptParser(),
+                              new PythonParser()
                             ])
                      );
 

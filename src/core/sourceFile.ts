@@ -1,6 +1,7 @@
 export type SourceFileLanguage =
     | "javascript"
-    | "typescript";
+    | "typescript"
+    | "python";
 
 export interface SourceFile {
     path: string;

@@ -45,7 +45,9 @@ function getLanguage(
     ) {
         return "typescript";
     }
-
+    if (lowerPath.endsWith(".py")) {
+    return "python";
+}
     return undefined;
 }
 
@@ -93,7 +95,7 @@ export function discoverSourceFiles(
                     rootDirectory,
                     fullPath
                 ).replace(/\\/g, "/");
-
+                
             const language =
                 getLanguage(relativePath);
 

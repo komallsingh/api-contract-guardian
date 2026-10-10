@@ -294,5 +294,37 @@ suite(
                 }
             }
         );
+        test("discovers Python files recursively", async function () {
+    this.timeout(10000);
+
+    const repositoryPath = mkdtempSync(
+        join(tmpdir(), "guardian-python-discovery-")
+    );
+
+    try {
+        mkdirSync(join(repositoryPath, "services", "api"), {
+            recursive: true
+        });
+
+        writeFileSync(
+            join(repositoryPath, "services", "api", "app.py"),
+            ""
+        );
+
+        const result = discoverSourceFiles(repositoryPath);
+
+        assert.deepStrictEqual(result, [
+            {
+                path: "services/api/app.py",
+                language: "python"
+            }
+        ]);
+    } finally {
+        await rm(repositoryPath, {
+            recursive: true,
+            force: true
+        });
+    }
+});
     }
 );

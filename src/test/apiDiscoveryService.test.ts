@@ -7,7 +7,7 @@ import {
 import {
     JavaScriptParser
 } from "../languages/javascript/javascriptParser";
-
+import { PythonParser } from "../languages/python/pythonParser";
 suite(
     "API Discovery Service",
     () => {
@@ -58,5 +58,29 @@ suite(
                 );
             }
         );
+        test("discovers APIs from Python source files", () => {
+    const service = new ApiDiscoveryService([
+        new JavaScriptParser(),
+        new PythonParser()
+    ]);
+
+    const result = service.discover([
+        {
+            path: "services/api/app.py",
+            language: "python",
+            content: `
+@app.get("/customers")
+def get_customers():
+    return {"customers": []}
+`
+        }
+    ]);
+
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].method, "GET");
+    assert.strictEqual(result[0].path, "/customers");
+    assert.strictEqual(result[0].file, "services/api/app.py");
+});
+        
     }
 );

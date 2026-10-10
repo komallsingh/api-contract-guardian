@@ -81,7 +81,12 @@ export class GitSourceRepository {
                         language: "typescript"
                     } as SourceFile;
                 }
-
+                if (lowerPath.endsWith(".py")) {
+    return {
+        path,
+        language: "python"
+    } as SourceFile;
+}
                 return undefined;
             })
             .filter(

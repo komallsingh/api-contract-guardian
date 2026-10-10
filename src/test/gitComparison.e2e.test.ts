@@ -30,6 +30,7 @@ import { ApiDiscoveryService } from "../core/apiDiscoveryService";
 import { ApiRevisionDiscovery } from "../core/git/apiRevisionDiscovery";
 
 import { GitSourceRepository } from "../core/git/gitSourceRepository";
+import { PythonParser } from "../languages/python/pythonParser";
 
 suite("Git Comparison E2E", () => {
 
@@ -524,5 +525,94 @@ suite("Git Comparison E2E", () => {
 
         }
     );
+    test(
+    "detects a removed Python response field between Git revisions",
+    async function () {
+        this.timeout(10000);
+
+        const repositoryPath = mkdtempSync(
+            join(tmpdir(), "api-contract-guardian-python-")
+        );
+
+        const runGit = (args: string[]) => {
+            return execFileSync("git", args, {
+                cwd: repositoryPath,
+                encoding: "utf-8"
+            }).trim();
+        };
+
+        try {
+            runGit(["init"]);
+            runGit(["config", "user.email", "test@example.com"]);
+            runGit(["config", "user.name", "API Contract Guardian Test"]);
+
+            writeFileSync(
+                join(repositoryPath, "app.py"),
+                `@app.get("/users")
+def get_users():
+    return {
+        "id": 1,
+        "name": "Komal"
+    }
+`
+            );
+
+            runGit(["add", "."]);
+            runGit(["commit", "-m", "add Python users API"]);
+
+            const oldRevision = runGit(["rev-parse", "HEAD"]);
+
+            writeFileSync(
+                join(repositoryPath, "app.py"),
+                `@app.get("/users")
+def get_users():
+    return {
+        "id": 1
+    }
+`
+            );
+
+            runGit(["add", "."]);
+            runGit(["commit", "-m", "remove name from response"]);
+
+            const newRevision = runGit(["rev-parse", "HEAD"]);
+
+            const apiRevisionDiscovery = new ApiRevisionDiscovery(
+                new GitSourceRepository(repositoryPath),
+                new ApiDiscoveryService([
+                    new JavaScriptParser(),
+                    new PythonParser()
+                ])
+            );
+
+            const service = new ContractComparisonService(
+                repositoryPath,
+                apiRevisionDiscovery
+            );
+
+            const result = service.compare(oldRevision, newRevision);
+
+            assert.strictEqual(result.oldContracts.length, 1);
+            assert.strictEqual(result.newContracts.length, 1);
+
+            assert.deepStrictEqual(result.breakingChanges, [
+    {
+        type: "REMOVED_RESPONSE_FIELD",
+        method: "GET",
+        path: "/users",
+        field: "name",
+        oldType: "string"
+    }
+]);
+        } finally {
+            await rm(repositoryPath, {
+                recursive: true,
+                force: true,
+                maxRetries: 10,
+                retryDelay: 200
+            });
+        }
+    }
+);
 
 });
