@@ -28,10 +28,7 @@ export function extractResponseContract(
 
                 const object = expression.expression;
 
-                if (
-                    ts.isIdentifier(object) &&
-                    object.text === "res"
-                ) {
+                if (isResponseObject(object)) {
 
                     const responseArgument = node.arguments[0];
 
@@ -81,6 +78,36 @@ export function extractResponseContract(
         }
 
         ts.forEachChild(node, visit);
+    }
+
+    function isResponseObject(
+        expression: ts.Expression
+    ): boolean {
+
+        if (
+            ts.isIdentifier(expression) &&
+            expression.text === "res"
+        ) {
+            return true;
+        }
+
+        if (ts.isCallExpression(expression)) {
+
+            if (
+                ts.isPropertyAccessExpression(expression.expression) &&
+                expression.expression.name.text === "status"
+            ) {
+
+                if (
+                    ts.isIdentifier(expression.expression.expression) &&
+                    expression.expression.expression.text === "res"
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     function getPropertyName(
