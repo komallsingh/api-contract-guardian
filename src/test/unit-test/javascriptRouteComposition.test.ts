@@ -263,5 +263,237 @@ suite(
             }
         );
 
+
+        test(
+            "composes nested prefixes across files with aliased named imports and preserves methods",
+            () => {
+
+                const sourceFiles:
+                    SourceFileContent[] = [
+
+                    {
+                        path: "server.ts",
+                        language: "javascript",
+                        content: `
+                            import apiRouter from "./routes/apiRoutes";
+
+                            const app = express();
+
+                            app.use("/api", apiRouter);
+                        `
+                    },
+
+                    {
+                        path: "routes/apiRoutes.ts",
+                        language: "javascript",
+                        content: `
+                            import {
+                                customerRouter as customers
+                            } from "./customerRoutes";
+
+                            const apiRouter = express.Router();
+
+                            apiRouter.use("/v1", customers);
+
+                            export default apiRouter;
+                        `
+                    },
+
+                    {
+                        path: "routes/customerRoutes.ts",
+                        language: "javascript",
+                        content: `
+                            const customerRouter = express.Router();
+
+                            customerRouter.get(
+                                "/customers",
+                                (req, res) => res.json([])
+                            );
+
+                            customerRouter.post(
+                                "/customers",
+                                (req, res) => res.status(201).json({})
+                            );
+
+                            customerRouter.delete(
+                                "/customers/:id",
+                                (req, res) => res.status(204).end()
+                            );
+
+                            export { customerRouter };
+                        `
+                    }
+
+                ];
+
+                const service =
+                    new ApiDiscoveryService([
+                        new JavaScriptParser()
+                    ]);
+
+                const result =
+                    service.discover(sourceFiles);
+
+                const routes =
+                    result
+                        .map(
+                            contract => ({
+                                method: contract.method,
+                                path: contract.path
+                            })
+                        )
+                        .sort(
+                            (left, right) =>
+                                `${left.method} ${left.path}`.localeCompare(
+                                    `${right.method} ${right.path}`
+                                )
+                        );
+
+                assert.deepStrictEqual(
+                    routes,
+                    [
+                        {
+                            method: "DELETE",
+                            path: "/api/v1/customers/:id"
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/v1/customers"
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/v1/customers"
+                        }
+                    ]
+                );
+
+            }
+        );
+
+        test(
+            "keeps routes discoverable when a mounted import cannot be resolved",
+            () => {
+
+                const sourceFiles:
+                    SourceFileContent[] = [
+
+                    {
+                        path: "server.ts",
+                        language: "javascript",
+                        content: `
+                            import { missingRouter } from "./routes/customerRoutes";
+
+                            const app = express();
+
+                            app.use("/api", missingRouter);
+                        `
+                    },
+
+                    {
+                        path: "routes/customerRoutes.ts",
+                        language: "javascript",
+                        content: `
+                            const customerRouter = express.Router();
+
+                            customerRouter.get(
+                                "/customers",
+                                (req, res) => res.json([])
+                            );
+
+                            export default customerRouter;
+                        `
+                    }
+
+                ];
+
+                const service =
+                    new ApiDiscoveryService([
+                        new JavaScriptParser()
+                    ]);
+
+                const result =
+                    service.discover(sourceFiles);
+
+                assert.deepStrictEqual(
+                    result.map(
+                        contract => ({
+                            method: contract.method,
+                            path: contract.path
+                        })
+                    ),
+                    [
+                        {
+                            method: "GET",
+                            path: "/customers"
+                        }
+                    ]
+                );
+
+            }
+        );
+
+        test(
+            "does not invent a prefix for a dynamic mount path",
+            () => {
+
+                const sourceFiles:
+                    SourceFileContent[] = [
+
+                    {
+                        path: "server.ts",
+                        language: "javascript",
+                        content: `
+                            import { customerRouter } from "./routes/customerRoutes";
+
+                            const app = express();
+                            const prefix = process.env.API_PREFIX;
+
+                            app.use(prefix, customerRouter);
+                        `
+                    },
+
+                    {
+                        path: "routes/customerRoutes.ts",
+                        language: "javascript",
+                        content: `
+                            const customerRouter = express.Router();
+
+                            customerRouter.get(
+                                "/customers",
+                                (req, res) => res.json([])
+                            );
+
+                            export { customerRouter };
+                        `
+                    }
+
+                ];
+
+                const service =
+                    new ApiDiscoveryService([
+                        new JavaScriptParser()
+                    ]);
+
+                const result =
+                    service.discover(sourceFiles);
+
+                assert.deepStrictEqual(
+                    result.map(
+                        contract => ({
+                            method: contract.method,
+                            path: contract.path
+                        })
+                    ),
+                    [
+                        {
+                            method: "GET",
+                            path: "/customers"
+                        }
+                    ]
+                );
+
+            }
+        );
+
     }
 );
