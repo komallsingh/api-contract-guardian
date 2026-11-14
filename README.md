@@ -288,29 +288,88 @@ If a statically detectable consumer accesses `data.email`, Guardian can addition
 
 ---
 
-# V2 Example — Cross-File Routing
+# V2 Example — Cross-File Express Router Composition
 
-V2 can resolve an API distributed across multiple files:
+An Express endpoint can be declared in one file, mounted under a version prefix in another file, and then mounted under an application-wide prefix in the entry point. Guardian follows supported static imports and exports to compose these prefixes into the final API path.
 
-```text
-server.ts
-    |
-    +-- app.use("/api", apiRouter)
-                              |
-                              +-- apiRouter.use("/v1", customerRouter)
-                                                               |
-                                                               +-- GET "/customers"
+The following example uses three files.
+
+### 1. `server.ts` — mount the API router
+
+The application mounts the API router under `/api`:
+
+```typescript
+import express from "express";
+import apiRouter from "./routes/apiRoutes";
+
+const app = express();
+
+app.use("/api", apiRouter);
 ```
 
-Guardian resolves the composed route as:
+This contributes the `/api` prefix.
 
-```text
-GET /api/v1/customers
+### 2. `routes/apiRoutes.ts` — mount the customer router
+
+The API router imports the customer router by a named export, aliases it locally as `customers`, and mounts it under `/v1`:
+
+```typescript
+import express from "express";
+import {
+  customerRouter as customers
+} from "./customerRoutes";
+
+const apiRouter = express.Router();
+
+apiRouter.use("/v1", customers);
+
+export default apiRouter;
 ```
 
-This allows the contract comparison engine to work with the actual API path rather than treating each source file in isolation.
+This contributes the `/v1` prefix. The import alias does not change which exported router Guardian resolves.
 
----
+### 3. `routes/customerRoutes.ts` — declare the endpoint
+
+The customer router defines the route and exports the router:
+
+```typescript
+import express from "express";
+
+const customerRouter = express.Router();
+
+customerRouter.get("/customers", (req, res) => {
+  res.json({ id: 1 });
+});
+
+export { customerRouter };
+```
+
+This contributes the `/customers` route path.
+
+### Composed endpoint
+
+Guardian combines the mount prefixes from the first two files with the route path from the third file:
+
+| Source | Path contribution |
+| --- | --- |
+| `server.ts` | `/api` |
+| `routes/apiRoutes.ts` | `/v1` |
+| `routes/customerRoutes.ts` | `/customers` |
+| **Final endpoint** | **`GET /api/v1/customers`** |
+
+The same composition applies to other supported HTTP methods declared on the customer router. For example, a `POST /customers` route in the third file becomes `POST /api/v1/customers`.
+
+### What Guardian can resolve
+
+This example reflects the cross-file patterns covered by the route-composition tests:
+
+- Relative imports with default or named exports.
+- Named imports that use a local alias.
+- Nested router mounts across multiple files.
+- Literal string mount prefixes and route paths.
+- Multiple mounts of the same router, which produce a composed path for each mount.
+
+Guardian performs static analysis; it does not start the Express application. Dynamic mount prefixes, runtime-generated routes, unresolved imports, and relationships that cannot be established from supported static import/export patterns may not be composed. When a mount cannot be resolved, Guardian does not invent a prefix; a route that can still be discovered may remain available under its local path.
 
 # Supported API Patterns
 
